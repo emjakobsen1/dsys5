@@ -14,86 +14,122 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// GetCurrentTimeClient is the client API for GetCurrentTime service.
+// AuctionhouseClient is the client API for Auctionhouse service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GetCurrentTimeClient interface {
-	GetTime(ctx context.Context, in *GetTimeRequest, opts ...grpc.CallOption) (*GetTimeReply, error)
+type AuctionhouseClient interface {
+	Bid(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Ack, error)
+	Result(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Outcome, error)
 }
 
-type getCurrentTimeClient struct {
+type auctionhouseClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGetCurrentTimeClient(cc grpc.ClientConnInterface) GetCurrentTimeClient {
-	return &getCurrentTimeClient{cc}
+func NewAuctionhouseClient(cc grpc.ClientConnInterface) AuctionhouseClient {
+	return &auctionhouseClient{cc}
 }
 
-func (c *getCurrentTimeClient) GetTime(ctx context.Context, in *GetTimeRequest, opts ...grpc.CallOption) (*GetTimeReply, error) {
-	out := new(GetTimeReply)
-	err := c.cc.Invoke(ctx, "/proto.getCurrentTime/getTime", in, out, opts...)
+func (c *auctionhouseClient) Bid(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, "/proto.Auctionhouse/Bid", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GetCurrentTimeServer is the server API for GetCurrentTime service.
-// All implementations must embed UnimplementedGetCurrentTimeServer
+func (c *auctionhouseClient) Result(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Outcome, error) {
+	out := new(Outcome)
+	err := c.cc.Invoke(ctx, "/proto.Auctionhouse/Result", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuctionhouseServer is the server API for Auctionhouse service.
+// All implementations must embed UnimplementedAuctionhouseServer
 // for forward compatibility
-type GetCurrentTimeServer interface {
-	GetTime(context.Context, *GetTimeRequest) (*GetTimeReply, error)
-	mustEmbedUnimplementedGetCurrentTimeServer()
+type AuctionhouseServer interface {
+	Bid(context.Context, *Amount) (*Ack, error)
+	Result(context.Context, *Void) (*Outcome, error)
+	mustEmbedUnimplementedAuctionhouseServer()
 }
 
-// UnimplementedGetCurrentTimeServer must be embedded to have forward compatible implementations.
-type UnimplementedGetCurrentTimeServer struct {
+// UnimplementedAuctionhouseServer must be embedded to have forward compatible implementations.
+type UnimplementedAuctionhouseServer struct {
 }
 
-func (UnimplementedGetCurrentTimeServer) GetTime(context.Context, *GetTimeRequest) (*GetTimeReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTime not implemented")
+func (UnimplementedAuctionhouseServer) Bid(context.Context, *Amount) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
 }
-func (UnimplementedGetCurrentTimeServer) mustEmbedUnimplementedGetCurrentTimeServer() {}
+func (UnimplementedAuctionhouseServer) Result(context.Context, *Void) (*Outcome, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
+}
+func (UnimplementedAuctionhouseServer) mustEmbedUnimplementedAuctionhouseServer() {}
 
-// UnsafeGetCurrentTimeServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GetCurrentTimeServer will
+// UnsafeAuctionhouseServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuctionhouseServer will
 // result in compilation errors.
-type UnsafeGetCurrentTimeServer interface {
-	mustEmbedUnimplementedGetCurrentTimeServer()
+type UnsafeAuctionhouseServer interface {
+	mustEmbedUnimplementedAuctionhouseServer()
 }
 
-func RegisterGetCurrentTimeServer(s grpc.ServiceRegistrar, srv GetCurrentTimeServer) {
-	s.RegisterService(&GetCurrentTime_ServiceDesc, srv)
+func RegisterAuctionhouseServer(s grpc.ServiceRegistrar, srv AuctionhouseServer) {
+	s.RegisterService(&Auctionhouse_ServiceDesc, srv)
 }
 
-func _GetCurrentTime_GetTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTimeRequest)
+func _Auctionhouse_Bid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Amount)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GetCurrentTimeServer).GetTime(ctx, in)
+		return srv.(AuctionhouseServer).Bid(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.getCurrentTime/getTime",
+		FullMethod: "/proto.Auctionhouse/Bid",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GetCurrentTimeServer).GetTime(ctx, req.(*GetTimeRequest))
+		return srv.(AuctionhouseServer).Bid(ctx, req.(*Amount))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// GetCurrentTime_ServiceDesc is the grpc.ServiceDesc for GetCurrentTime service.
+func _Auctionhouse_Result_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Void)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionhouseServer).Result(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Auctionhouse/Result",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionhouseServer).Result(ctx, req.(*Void))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Auctionhouse_ServiceDesc is the grpc.ServiceDesc for Auctionhouse service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var GetCurrentTime_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.getCurrentTime",
-	HandlerType: (*GetCurrentTimeServer)(nil),
+var Auctionhouse_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.Auctionhouse",
+	HandlerType: (*AuctionhouseServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "getTime",
-			Handler:    _GetCurrentTime_GetTime_Handler,
+			MethodName: "Bid",
+			Handler:    _Auctionhouse_Bid_Handler,
+		},
+		{
+			MethodName: "Result",
+			Handler:    _Auctionhouse_Result_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

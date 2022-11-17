@@ -5,12 +5,22 @@ package proto;
 option go_package = "https://github.com/emjakobsen1/dsys5;proto";
 
 
-service getCurrentTime {
-    rpc getTime (GetTimeRequest) returns (GetTimeReply) {}
+service Auctionhouse {
+    rpc Bid (Amount) returns (Ack) {}
+    rpc Result (Void) returns (Outcome) {}
 }
 
-message GetTimeRequest {}
+message Amount {
+    string bidder = 1;
+    int32 amount = 2;
+}
+message Ack {
+    string status = 1;
+}
 
-message GetTimeReply {
-    string reply = 1;
+message Void {}
+
+message Outcome {
+    string status = 1;
+    int32 highestBid = 2;
 }
