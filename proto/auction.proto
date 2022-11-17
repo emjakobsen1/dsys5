@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "https://github.com/emjakobsen1/dsys5;proto";
+
+
+service getCurrentTime {
+    rpc getTime (GetTimeRequest) returns (GetTimeReply) {}
+}
+
+message GetTimeRequest {}
+
+message GetTimeReply {
+    string reply = 1;
+}
