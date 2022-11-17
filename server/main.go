@@ -12,17 +12,19 @@ import (
 type Server struct {
 	// an interface that the server needs to have
 	gRPC.UnimplementedAuctionhouseServer
-
+	currentHighestBid int32
 	// here you can impliment other fields that you want
 }
 
+var server *Server
+
 func (s *Server) Bid(ctx context.Context, Amount *gRPC.Amount) (*gRPC.Ack, error) {
-	ack := &gRPC.Ack{Status: "ended"}
+	ack := &gRPC.Ack{Status: "Bid/ended"}
 	return ack, nil
 }
 
 func (s *Server) Result(ctx context.Context, Void *gRPC.Void) (*gRPC.Outcome, error) {
-	outcome := &gRPC.Outcome{Status: "ended"}
+	outcome := &gRPC.Outcome{Status: "Result/ended", HighestBid: s.currentHighestBid}
 	return outcome, nil
 }
 
@@ -37,7 +39,7 @@ func launchServer() {
 		return
 	}
 	grpcServer := grpc.NewServer()
-	gRPC.RegisterAuctionhouseServer(grpcServer, &Server{})
+	gRPC.RegisterAuctionhouseServer(grpcServer, &Server{currentHighestBid: 0})
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
