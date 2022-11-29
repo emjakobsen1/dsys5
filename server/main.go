@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	gRPC "github.com/emjakobsen1/dsys5/proto"
 	"google.golang.org/grpc"
@@ -13,7 +14,9 @@ import (
 
 var server *Server
 var duration = flag.Int("n", 120, "duration for the auction.")
-var ports = [3]string{"9080", "9081", "9082"}
+var currentWinner string
+
+//var ports = [3]string{"9080", "9081", "9082"}
 
 type Server struct {
 	// an interface that the server needs to have
@@ -25,13 +28,14 @@ type Server struct {
 }
 
 func (s *Server) Bid(ctx context.Context, Amount *gRPC.Amount) (*gRPC.Ack, error) {
-	log.Printf("Current highest bid %d \n", s.currentHighestBid)
+	log.Printf("SERVER: %s, highest bid: %d, user: %s, bids: %d \n", s.port, s.currentHighestBid, Amount.Bidder, Amount.Amount)
 	if Amount.Amount > s.currentHighestBid {
 		s.currentHighestBid = Amount.Amount
-		ack := &gRPC.Ack{Status: "SUCCESS, amount:" + fmt.Sprint(Amount.Amount) + " bidder: " + Amount.Bidder}
+		currentWinner = Amount.Bidder
+		ack := &gRPC.Ack{Status: "SUCCESS, amount:" + fmt.Sprint(Amount.Amount) + " bidder: " + Amount.Bidder, Id: Amount.Id}
 		return ack, nil
 	} else {
-		ack := &gRPC.Ack{Status: "FAIL: must be higher than current highest bid. " + Amount.Bidder}
+		ack := &gRPC.Ack{Status: "FAIL: must be higher than current highest bid. " + Amount.Bidder, Id: Amount.Id}
 		return ack, nil
 
 	}
@@ -39,16 +43,16 @@ func (s *Server) Bid(ctx context.Context, Amount *gRPC.Amount) (*gRPC.Ack, error
 }
 
 func (s *Server) Result(ctx context.Context, Void *gRPC.Void) (*gRPC.Outcome, error) {
-	outcome := &gRPC.Outcome{Status: "RUNNING", HighestBid: s.currentHighestBid}
+	outcome := &gRPC.Outcome{Status: "RUNNING", HighestBid: s.currentHighestBid, Id: Void.Id}
 	return outcome, nil
 }
 
 func main() {
 	flag.Parse()
-	log.Printf("AUCTION started with duration: %d", *duration)
-	go launch(ports[0])
-	go launch(ports[1])
-	launch(ports[2])
+	log.Printf("AUCTION started with duration: %d seconds", *duration)
+	go launch("9080")
+	go launch("9081")
+	launch("9082")
 
 }
 
@@ -74,13 +78,15 @@ func launch(portAddress string) {
 	server = getServer((portAddress))
 	gRPC.RegisterAuctionhouseServer(grpcServer, server)
 	log.Printf("Server running on port %s", server.port)
-	/*
-		time.Sleep(time.Second * time.Duration(*duration))
-		server.running = false
-		log.Println("AUCTION has ended")
-		//os.Exit(3)*/
+
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to server %v", err)
 	}
+}
+func run() {
+	time.Sleep(time.Second * time.Duration(*duration))
+	server.running = false
 
+	log.Println("AUCTION has ended")
+	log.Printf("Winner was: %s", currentWinner)
 }
